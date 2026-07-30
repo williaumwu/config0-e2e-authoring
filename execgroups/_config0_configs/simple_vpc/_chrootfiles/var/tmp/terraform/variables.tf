@@ -37,7 +37,7 @@ variable "cloud_tags" {
 variable "base_cidr" {
   type        = string
   description = "The base cidr for subnets"
-  default     = "10.11"
+  default     = "10.11.0.0/19"
 }
 
 variable "num_of_subnets" {
