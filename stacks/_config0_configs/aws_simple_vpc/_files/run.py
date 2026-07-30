@@ -49,7 +49,7 @@ def run(stackargs):
                              types="str")
 
     # Add execgroup
-    stack.add_execgroup("config0-hub:::aws_networking::vpc_simple",
+    stack.add_execgroup("williaumwu:::config0-e2e-authoring::simple_vpc",
                         "tf_execgroup")
 
     # Add substack
