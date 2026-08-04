@@ -36,6 +36,10 @@ def run(stackargs):
     stack.parse.add_optional(key="cloud_tags_hash",
                              types="str")
 
+    stack.parse.add_optional(key="engine_version",
+                             default="8.0.46",
+                             types="str")
+
     # Compose the user's own VPC stack, then the user's own RDS stack, as
     # substacks. Inserted sequentially (no set_parallel), so one run brings up
     # the VPC — with its security groups — first, then the RDS.
@@ -75,6 +79,7 @@ def run(stackargs):
         "vpc_name": "selector:::network_vars::vpc_name",
         "subnet_ids": "selector:::network_vars::private_subnet_ids",
         "sg_id": "selector:::sg_vars::db_sg_id",
+        "engine_version": stack.engine_version,
         "allocated_storage": 14,
         "db_name": "app",
         "publish_creds": True,
