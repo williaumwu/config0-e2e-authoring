@@ -23,7 +23,7 @@ module "eks_cluster" {
   source = "./path/to/module"
 
   eks_cluster              = "my-eks-cluster"
-  eks_cluster_version      = "1.35"
+  eks_cluster_version      = "1.37"
   vpc_id                   = "vpc-0123456789abcdef0"
   eks_cluster_subnet_ids   = ["subnet-0123456789abcdef0", "subnet-0123456789abcdef1"]
   eks_cluster_sg_id        = "sg-0123456789abcdef0"
@@ -45,7 +45,7 @@ module "eks_cluster" {
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | aws_default_region | AWS region where resources will be created | string | `"us-west-1"` | No |
-| eks_cluster_version | Kubernetes version to use for the EKS cluster | string | `"1.35"` | No |
+| eks_cluster_version | Kubernetes version to use for the EKS cluster | string | `"1.37"` | No |
 | vpc_id | ID of the VPC where the EKS cluster will be deployed | string | n/a | Yes |
 | eks_cluster_subnet_ids | List of subnet IDs where the EKS cluster will be deployed | list(string) | n/a | Yes |
 | eks_cluster | Name of the EKS cluster | string | n/a | Yes |
