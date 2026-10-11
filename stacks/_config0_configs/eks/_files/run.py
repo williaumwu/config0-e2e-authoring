@@ -49,10 +49,6 @@ class Main(newSchedStack):
         self.stack.add_execgroup("config0-hub:::aws_eks::eks-cluster",
                                  "cloud_resource")
 
-        # add script dependencies
-        self.stack.add_script("config0-hub:::aws::map-role-aws-to-eks",
-                              "map_role")
-
         # add substacks
         self.stack.add_substack("config0-hub:::aws_eks::aws_eks_cluster")
         self.stack.add_substack("config0-hub:::aws_eks::aws_eks_nodegroup")
@@ -70,12 +66,6 @@ class Main(newSchedStack):
         self.parse.add_required(key="eks_cluster_sg_id",
                                 tags="cluster",
                                 types="str")
-
-        # mapping eks service account to aws role
-        self.parse.add_optional(key="role_name",
-                                default="null",
-                                tags="cluster",
-                                types="str,null")
 
         self.parse.add_optional(key="eks_cluster_version",
                                 default="1.35",
