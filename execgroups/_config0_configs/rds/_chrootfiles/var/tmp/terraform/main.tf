@@ -18,8 +18,8 @@ resource "aws_db_instance" "default" {
   db_subnet_group_name   = aws_db_subnet_group.default.id
   vpc_security_group_ids = var.security_group_ids
 
-  username = var.master_username
-  password = var.master_password
+  username = var.rds_master_username
+  password = var.rds_master_password
   db_name  = var.db_name
 
   instance_class    = var.instance_class

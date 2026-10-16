@@ -22,14 +22,14 @@ variable "db_subnet_name" {
   default     = "db_subnet_name"
 }
 
-variable "master_username" {
+variable "rds_master_username" {
   description = "Username for the master DB user"
   type        = string
   default     = "admin101"
   sensitive   = true
 }
 
-variable "master_password" {
+variable "rds_master_password" {
   description = "Password for the master DB user"
   type        = string
   default     = "password101"
