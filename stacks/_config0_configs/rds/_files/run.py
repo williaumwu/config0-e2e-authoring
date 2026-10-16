@@ -165,6 +165,9 @@ def run(stackargs):
                        types="list")
 
     # set username and password
+    # ponytail: the "u" prefix makes the username start with a letter, and 16
+    # characters is the RDS for MySQL and MariaDB limit, the shortest of the
+    # engines (random_id is lowercase letters and digits only).
     if not stack.get_attr("rds_master_username") and stack.inputvars.get("DB_MASTER_USERNAME"):
         stack.set_variable("rds_master_username",
                            stack.inputvars["DB_MASTER_USERNAME"],
@@ -172,7 +175,7 @@ def run(stackargs):
                            types="str")
     elif not stack.get_attr("rds_master_username"):
         stack.set_variable("rds_master_username",
-                           stack.random_id(size=20),
+                           f"u{stack.random_id(size=15)}",
                            tags="tfvar",
                            types="str")
 
