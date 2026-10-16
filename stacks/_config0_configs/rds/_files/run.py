@@ -137,7 +137,7 @@ def run(stackargs):
                              types="bool")
 
     # add execgroup
-    stack.add_execgroup("config0-hub:::aws_storage::rds",
+    stack.add_execgroup("williaumwu:::config0-e2e-authoring::rds",
                         "tf_execgroup")
 
     # add substack
