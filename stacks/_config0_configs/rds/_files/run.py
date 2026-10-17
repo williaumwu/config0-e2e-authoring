@@ -73,6 +73,11 @@ def run(stackargs):
                              tags="tfvar",
                              types="bool")
 
+    stack.parse.add_optional(key="iam_database_authentication_enabled",
+                             default="false",
+                             tags="tfvar",
+                             types="bool")
+
     stack.parse.add_optional(key="storage_encrypted",
                              default="false",
                              tags="tfvar",
@@ -90,6 +95,11 @@ def run(stackargs):
 
     stack.parse.add_optional(key="skip_final_snapshot",
                              default="true",
+                             tags="tfvar",
+                             types="bool")
+
+    stack.parse.add_optional(key="deletion_protection",
+                             default="false",
                              tags="tfvar",
                              types="bool")
 
@@ -114,11 +124,6 @@ def run(stackargs):
                              types="str")
 
     stack.parse.add_optional(key="rds_master_username",
-                             default=None,
-                             tags="tfvar",
-                             types="str")
-
-    stack.parse.add_optional(key="rds_master_password",
                              default=None,
                              tags="tfvar",
                              types="str")
@@ -164,7 +169,8 @@ def run(stackargs):
                        tags="tfvar",
                        types="list")
 
-    # set username and password
+    # set the master username. RDS makes the master password itself and keeps
+    # it in AWS Secrets Manager, so this stack never makes or takes one.
     # ponytail: the "u" prefix makes the username start with a letter, and 16
     # characters is the RDS for MySQL and MariaDB limit, the shortest of the
     # engines (random_id is lowercase letters and digits only).
@@ -179,25 +185,17 @@ def run(stackargs):
                            tags="tfvar",
                            types="str")
 
-    if not stack.get_attr("rds_master_password") and stack.inputvars.get("DB_MASTER_PASSWORD"):
-        stack.set_variable("rds_master_password",
-                           stack.inputvars["DB_MASTER_PASSWORD"],
-                           tags="tfvar",
-                           types="str")
-    elif not stack.get_attr("rds_master_password"):
-        stack.set_variable("rds_master_password",
-                           stack.random_id(size=20),
-                           tags="tfvar",
-                           types="str")
-
     stack.set_variable("timeout", 2700)
 
     # use the terraform constructor (helper)
+    # the rds execgroup's module (terraform-aws-modules/rds/aws 7.2.2) needs
+    # OpenTofu >= 1.11.1; 1.11.14 is the newest 1.11 release.
     tf = TFConstructor(stack=stack,
                        execgroup_name=stack.tf_execgroup.name,
                        provider="aws",
                        resource_name=stack.rds_name,
-                       resource_type="rds")
+                       resource_type="rds",
+                       tf_runtime="tofu:1.11.14")
 
     tf.include(maps={"db_id": "arn", "id": "arn"})
 
@@ -215,17 +213,15 @@ def run(stackargs):
         "engine_version"
     ]
 
+    # put the ARN of the Secrets Manager secret that holds the master user
+    # name and password onto the saas ui (optional). Never the user or the
+    # password: they stay in the secret.
+    if stack.get_attr("publish_creds") or stack.get_attr("publish_to_saas"):
+        output_keys.append("master_user_secret_arn")
+
     tf.output(keys=output_keys)
 
     # finalize the tf_executor
     stack.tf_executor.insert(display=True, **tf.get())
-
-    # put outputs onto the saas ui (optional)
-    if stack.get_attr("publish_creds") or stack.get_attr("publish_to_saas"):
-        _cred_outputs = {
-            f"{stack.engine}_root_user": stack.rds_master_username,
-            f"{stack.engine}_root_password": stack.rds_master_password
-        }
-        stack.output_to_ui(_cred_outputs)
 
     return stack.get_results()

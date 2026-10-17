@@ -29,13 +29,6 @@ variable "rds_master_username" {
   sensitive   = true
 }
 
-variable "rds_master_password" {
-  description = "Password for the master DB user"
-  type        = string
-  default     = "password101"
-  sensitive   = true
-}
-
 variable "security_group_ids" {
   type        = list(string)
   description = "List of VPC security group IDs to associate with the RDS instance"
@@ -94,6 +87,12 @@ variable "publicly_accessible" {
   default     = false
 }
 
+variable "iam_database_authentication_enabled" {
+  description = "Specifies whether IAM database authentication is enabled"
+  type        = bool
+  default     = false
+}
+
 variable "storage_type" {
   description = "The type of storage to be used by the RDS instance (gp2, gp3, io1, standard)"
   type        = string
@@ -104,6 +103,12 @@ variable "skip_final_snapshot" {
   description = "Determines whether a final DB snapshot is created before the DB instance is deleted"
   type        = bool
   default     = true
+}
+
+variable "deletion_protection" {
+  description = "Whether the DB instance refuses to be deleted"
+  type        = bool
+  default     = false
 }
 
 variable "allow_major_version_upgrade" {
@@ -124,7 +129,6 @@ variable "cloud_tags" {
   default     = {}
 }
 
-/*
 variable "backup_retention_period" {
   description = "The days to retain backups for"
   type        = number
@@ -134,7 +138,7 @@ variable "backup_retention_period" {
 variable "backup_window" {
   description = "The daily time range during which automated backups are created"
   type        = string
-  default     = "10:46-11:16"
+  default     = "10:22-11:22"
 }
 
 variable "maintenance_window" {
@@ -142,5 +146,4 @@ variable "maintenance_window" {
   type        = string
   default     = "Mon:00:00-Mon:03:00"
 }
-*/
 

@@ -41,14 +41,16 @@ provider "aws" {
 # Terraform Version Configuration
 # Specifies the required Terraform and provider versions
 terraform {
-  # Minimum Terraform version required
-  required_version = ">= 1.1.0"
+  # The rds module 7.2.2 needs OpenTofu or Terraform >= 1.11.1
+  required_version = ">= 1.11.1"
 
   # Required providers with version constraints
   required_providers {
     aws = {
-      source  = "hashicorp/aws" # AWS provider source
-      version = "~> 5.0"        # Compatible with AWS provider v5.x
+      source = "hashicorp/aws" # AWS provider source
+      # The rds module 7.2.2 needs >= 6.28. No lock file pins the provider,
+      # so this stays on 6.x.
+      version = "~> 6.28"
     }
   }
 }

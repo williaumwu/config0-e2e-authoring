@@ -1,13 +1,17 @@
 # AWS RDS Module
 
-This OpenTofu module creates and configures an AWS RDS instance with a dedicated subnet group.
+This OpenTofu module creates an AWS RDS instance and its dedicated subnet group through
+the community module `terraform-aws-modules/rds/aws` 7.2.2.
 
 ## Features
 
 - Creates an AWS RDS instance with configurable parameters
 - Sets up a dedicated subnet group for the RDS instance
 - Supports multiple database engines (MySQL, PostgreSQL, etc.)
-- Configurable security settings, storage, and backup options
+- RDS makes the master password and keeps it in AWS Secrets Manager
+  (`manage_master_user_password = true`). RDS rotates it every seven days by default
+  and deletes it with the instance. No password variable exists.
+- Uses the engine's default parameter group and option group
 
 ## Usage
 
@@ -15,19 +19,19 @@ This OpenTofu module creates and configures an AWS RDS instance with a dedicated
 module "rds" {
   source = "./path/to/module"
 
-  db_name          = "mydb"
-  rds_name         = "my-rds-instance"
-  master_username  = "admin"
-  master_password  = "SecurePassword123"
-  
-  subnet_ids        = ["subnet-1234abcd", "subnet-5678efgh"]
+  db_name             = "mydb"
+  rds_name            = "my-rds-instance"
+  db_subnet_name      = "my-rds-instance-subnet"
+  rds_master_username = "admin"
+
+  subnet_ids         = ["subnet-1234abcd", "subnet-5678efgh"]
   security_group_ids = ["sg-1234abcd"]
-  
+
   allocated_storage = 20
   engine            = "mysql"
-  engine_version    = "8.0"
+  engine_version    = "8.0.46"
   instance_class    = "db.t3.small"
-  
+
   cloud_tags = {
     Environment = "production"
     Owner       = "data-team"
@@ -37,8 +41,8 @@ module "rds" {
 
 ## Requirements
 
-- OpenTofu >= 1.8.8
-- AWS Provider
+- OpenTofu or Terraform >= 1.11.1 (the rds module 7.2.2 needs it)
+- AWS Provider `~> 6.28`
 
 ## Variables
 
@@ -48,8 +52,7 @@ module "rds" {
 | aws_default_region | The AWS region where resources will be created | `string` | `"us-east-1"` | no |
 | rds_name | The name of the RDS instance | `string` | `"test-rds"` | no |
 | db_subnet_name | The name of the DB subnet group | `string` | `"db_subnet_name"` | no |
-| master_username | Username for the master DB user | `string` | `"admin101"` | no |
-| master_password | Password for the master DB user | `string` | `"password101"` | no |
+| rds_master_username | Username for the master DB user | `string` | `"admin101"` | no |
 | security_group_ids | List of VPC security group IDs to associate with the RDS instance | `list(string)` | n/a | yes |
 | subnet_ids | List of subnet IDs to include in the DB subnet group | `list(string)` | n/a | yes |
 | allocated_storage | The allocated storage size in gibibytes (GiB) | `number` | `10` | no |
@@ -60,13 +63,12 @@ module "rds" {
 | storage_encrypted | Specifies whether the DB instance is encrypted | `bool` | `false` | no |
 | port | The port on which the DB accepts connections | `number` | `3306` | no |
 | publicly_accessible | Controls if the instance is publicly accessible | `bool` | `false` | no |
+| iam_database_authentication_enabled | Specifies whether IAM database authentication is enabled | `bool` | `false` | no |
 | storage_type | The type of storage to be used by the RDS instance (gp2, gp3, io1, standard) | `string` | `"gp2"` | no |
 | skip_final_snapshot | Determines whether a final DB snapshot is created before the DB instance is deleted | `bool` | `true` | no |
+| deletion_protection | Whether the DB instance refuses to be deleted | `bool` | `false` | no |
 | allow_major_version_upgrade | Indicates that major version upgrades are allowed | `bool` | `true` | no |
 | auto_minor_version_upgrade | Indicates that minor engine upgrades will be applied automatically | `bool` | `true` | no |
-| backup_retention_period | The days to retain backups for | `number` | `1` | no |
-| maintenance_window | The window to perform maintenance in | `string` | `"Mon:00:00-Mon:03:00"` | no |
-| backup_window | The daily time range during which automated backups are created | `string` | `"10:46-11:16"` | no |
 | cloud_tags | Additional tags as a map to apply to all resources | `map(string)` | `{}` | no |
 
 ## Outputs
@@ -84,11 +86,16 @@ module "rds" {
 | multi_az | Whether the RDS instance is multi-AZ |
 | engine | The database engine of the RDS instance |
 | engine_version | The database engine version of the RDS instance |
+| endpoint | The connection endpoint of the RDS instance, address:port |
+| address | The host name of the RDS instance |
+| port | The port the RDS instance listens on |
+| master_user_secret_arn | The ARN of the Secrets Manager secret that holds the master user name and password |
 
 ## Security Considerations
 
 - By default, the module creates an RDS instance that is not publicly accessible
-- Remember to use strong passwords for the master user
+- The master password never passes through this module; read it from the secret at
+  `master_user_secret_arn`, and grant read access to that secret to whatever connects
 - Consider enabling storage encryption for production environments
 - For critical workloads, enable Multi-AZ deployment for high availability
 
