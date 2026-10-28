@@ -42,7 +42,7 @@ variable "subnet_ids" {
 variable "allocated_storage" {
   description = "The allocated storage size in gibibytes (GiB)"
   type        = number
-  default     = 14
+  default     = 10
 }
 
 variable "engine" {
